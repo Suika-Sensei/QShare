@@ -25,8 +25,7 @@ dist-ssr
 /src-tauri/WixTools/
 
 # Editor directories and files
-.vscode/*
-!.vscode/extensions.json
+.vscode/
 .idea
 .DS_Store
 *.suo
@@ -37,4 +36,5 @@ dist-ssr
 
 # OS
 Thumbs.db
+
 CLAUDE.md
