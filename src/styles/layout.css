@@ -1,0 +1,82 @@
+/*
+ * Application Layout Styles
+ * Container structure for bottom navigation
+ */
+
+@import "tailwindcss";
+
+/* Ensure full viewport height for body and root */
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* Main app container with bottom navigation */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: var(--md-sys-color-background);
+}
+
+/* Content area - takes remaining space above navigation */
+.content-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: var(--md-sys-color-background);
+  color: var(--md-sys-color-on-background);
+  /* Padding removed - screens manage their own padding */
+}
+
+/* Navigation bar - fixed at bottom */
+md-navigation-bar {
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+/* Home Screen Styles */
+.home-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 24px;
+}
+
+.home-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+}
+
+.home-description {
+  font-size: 16px;
+  color: var(--md-sys-color-on-surface-variant);
+  margin: 0;
+}
+
+.qr-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 200px;
+  height: 200px;
+  background-color: var(--md-sys-color-surface-container);
+  border-radius: 16px;
+  color: var(--md-sys-color-on-surface-variant);
+}

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icon Test</title>
+    <style>
+        /* Material Symbols Rounded - Variable Font from jsDelivr CDN */
+        @font-face {
+            font-family: 'Material Symbols Rounded';
+            font-style: normal;
+            font-weight: 100 700;
+            src: url(https://cdn.jsdelivr.net/npm/@material-symbols/font-400/material-symbols-rounded.woff2) format('woff2');
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background: #f5f5f5;
+        }
+
+        .test-section {
+            background: white;
+            padding: 30px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .icon-row {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .icon-item {
+            text-align: center;
+        }
+
+        .icon {
+            font-family: 'Material Symbols Rounded';
+            font-size: 64px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* Unfilled - FILL = 0 */
+        .icon-unfilled {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        /* Filled - FILL = 1 */
+        .icon-filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Material Symbols Icon Test</h1>
+
+    <div class="test-section">
+        <h2>Test 1: CSS Classes with font-variation-settings</h2>
+        <div class="icon-row">
+            <div class="icon-item">
+                <span class="icon icon-unfilled">home</span>
+                <div>FILL: 0 (CSS)</div>
+            </div>
+            <div class="icon-item">
+                <span class="icon icon-filled">home</span>
+                <div>FILL: 1 (CSS)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Inline Styles with font-variation-settings</h2>
+        <div class="icon-row">
+            <div class="icon-item">
+                <span class="icon" style="font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;">home</span>
+                <div>FILL 0 (inline)</div>
+            </div>
+            <div class="icon-item">
+                <span class="icon" style="font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; color: #1976d2;">home</span>
+                <div>FILL 1 (inline)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Different Icons</h2>
+        <div class="icon-row">
+            <div class="icon-item">
+                <span class="icon icon-unfilled">favorite</span>
+                <div>favorite (unfilled)</div>
+            </div>
+            <div class="icon-item">
+                <span class="icon icon-filled">favorite</span>
+                <div>favorite (filled)</div>
+            </div>
+            <div class="icon-item">
+                <span class="icon icon-unfilled">star</span>
+                <div>star (unfilled)</div>
+            </div>
+            <div class="icon-item">
+                <span class="icon icon-filled">star</span>
+                <div>star (filled)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section" style="background: #d4edda;">
+        <h2>✅ Решение найдено!</h2>
+        <p><strong>Используем настоящие Variable Fonts от npm пакета через jsDelivr CDN</strong></p>
+        <p>Шрифт: <code>@material-symbols/font-400</code></p>
+        <p>CDN: <code>https://cdn.jsdelivr.net/npm/@material-symbols/font-400/material-symbols-rounded.woff2</code></p>
+        <p>Эти шрифты поддерживают <code>font-variation-settings</code> с осями:</p>
+        <ul>
+            <li><strong>FILL</strong>: 0 (unfilled) или 1 (filled)</li>
+            <li><strong>wght</strong>: 100-700 (толщина)</li>
+            <li><strong>GRAD</strong>: -50 до 200 (градиент)</li>
+            <li><strong>opsz</strong>: 20-48 (оптический размер)</li>
+        </ul>
+    </div>
+</body>
+</html>
