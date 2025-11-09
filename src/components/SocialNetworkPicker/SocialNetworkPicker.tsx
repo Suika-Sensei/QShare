@@ -92,14 +92,16 @@ export default function SocialNetworkPicker({ socialNetworks }: Props) {
   return (
     <div
       style={{
-        display: "inline-flex",
-        marginLeft: `calc(50vw - ${totalWidth / 2}em)`,
+        display: "flex",
+        justifyContent: "center",
+        width: "100%",
       }}
     >
       <div
         style={{
           position: "relative",
           height: `${squareSize + padding * 3}em`,
+          width: `${totalWidth}em`,
         }}
       >
         <div
