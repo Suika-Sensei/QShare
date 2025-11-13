@@ -1,0 +1,6 @@
+.theme-selector-button {
+  --md-filled-icon-button-container-color: var(
+    --md-sys-color-primary-container
+  );
+  --md-filled-icon-button-icon-color: var(--md-sys-color-on-primary-container);
+}

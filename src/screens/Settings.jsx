@@ -8,14 +8,7 @@ export default function Settings() {
     setTheme(newTheme);
 
     // Удаляем все классы тем
-    document.body.classList.remove(
-      "light",
-      "dark",
-      "light-medium-contrast",
-      "dark-medium-contrast",
-      "light-high-contrast",
-      "dark-high-contrast"
-    );
+    document.body.classList.remove("light", "dark");
 
     // Добавляем новый класс темы
     document.body.classList.add(newTheme);

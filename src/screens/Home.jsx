@@ -1,7 +1,9 @@
 import { useState } from "react";
 import SocialNetworkPicker from "../components/SocialNetworkPicker/SocialNetworkPicker";
 import Icons from "../components/SocialNetworkPicker/Icons";
-import QRCode from "../components/QRCode.tsx";
+import QRCode from "../components/QRCode/QRCode.tsx";
+import { useMD3Colors } from "../theme/colors";
+import ThemeSelector from "../themeSelector/ThemeSelector";
 
 const socialNetworks = [
   {
@@ -18,6 +20,11 @@ const socialNetworks = [
 export default function Home() {
   const [selectedNetwork, setSelectedNetwork] = useState(null);
   const [username, setUsername] = useState("");
+  const Color = useMD3Colors();
+
+  console.log("Colors loaded:", Color);
+  console.log("Primary color:", Color.primary);
+  console.log("Background color:", Color.background);
 
   const generateQRData = () => {
     // if (!selectedNetwork || !username) return "";
@@ -32,6 +39,9 @@ export default function Home() {
 
     return "https://t.me/";
   };
+
+  // Don't render QR code until colors are loaded
+  const colorsReady = Color.primary && Color.background;
 
   return (
     <div className="flex flex-col items-center gap-8 p-8">
@@ -52,28 +62,35 @@ export default function Home() {
         />
       </div> */}
 
-      {generateQRData() && (
-        <div className="flex flex-col items-center gap-4 p-6 bg-white rounded-2xl shadow-lg mt-[8em]">
+      {generateQRData() && colorsReady && (
+        <div className="flex flex-col items-center gap-4 p-6 bg-[var(--md-sys-color-primary-container)] rounded-2xl shadow-lg mt-[8em]">
           <QRCode
             data={generateQRData()}
-            width={280}
-            height={280}
+            width={230}
+            height={230}
             dotsOptions={{
-              color: "#4267b2",
+              color: Color.primary,
               type: "rounded",
             }}
             cornersSquareOptions={{
               type: "extra-rounded",
-              color: "#1a1a1a",
+              color: Color.primary,
             }}
             cornersDotOptions={{
               type: "dot",
-              color: "#4267b2",
+              color: Color.primary,
             }}
             backgroundOptions={{
-              color: "#ffffff",
+              color: Color.primaryContainer,
             }}
           />
+        </div>
+      )}
+      <ThemeSelector />
+
+      {generateQRData() && !colorsReady && (
+        <div className="flex items-center justify-center mt-[8em]">
+          <p>Loading colors...</p>
         </div>
       )}
     </div>
