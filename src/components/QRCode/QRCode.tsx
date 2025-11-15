@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { CSSProperties, useEffect, useRef } from "react";
 import QRCodeStyling, {
   Options,
   DotType,
@@ -53,6 +53,7 @@ interface QRCodeProps {
   backgroundOptions?: BackgroundOptions;
   /** Image/logo customization */
   imageOptions?: ImageOptions;
+  style?: CSSProperties;
 }
 
 export default function QRCode({

@@ -45,7 +45,7 @@ export default function SocialNetworkPicker({ socialNetworks }: Props) {
   const squareSize = 3;
   const gap = 1;
   const groupGap = 1;
-  const padding = 1;
+  const padding = 0.8;
 
   // Рассчитываем ширину каждой группы
   const group1Width =
@@ -58,7 +58,7 @@ export default function SocialNetworkPicker({ socialNetworks }: Props) {
       : squareSize + padding * 2;
 
   // Вычисляем общую ширину компонента
-  const totalWidth = group1Width + groupGap + group2Width + 1;
+  const totalWidth = group1Width + groupGap + group2Width;
 
   // Создаем анимации для всех квадратов
   const [springs] = useSprings(
@@ -73,12 +73,18 @@ export default function SocialNetworkPicker({ socialNetworks }: Props) {
 
       if (inGroup1) {
         const posInGroup = group1.indexOf(squareId);
-        x = padding + posInGroup * (squareSize + gap);
-        y = padding;
+        x = padding + posInGroup * (squareSize + gap) - 0.6;
+        y = padding - 0.625;
       } else if (inGroup2) {
         const posInGroup = group2.indexOf(squareId);
-        x = group1Width + groupGap + padding + posInGroup * (squareSize + gap);
-        y = padding;
+        // group2 background starts at group1Width + groupGap, so add padding from there
+        x =
+          group1Width +
+          groupGap +
+          padding +
+          posInGroup * (squareSize + gap) -
+          0.7;
+        y = padding - 0.7;
       }
 
       return {
@@ -100,17 +106,18 @@ export default function SocialNetworkPicker({ socialNetworks }: Props) {
       <div
         style={{
           position: "relative",
-          height: `${squareSize + padding * 3}em`,
+          height: `${squareSize + padding * 2}em`,
           width: `${totalWidth}em`,
+          overflow: "visible",
         }}
       >
         <div
           style={{
             position: "absolute",
             width: `${group1Width}em`,
-            left: `${padding / 1.2}em`,
-            height: `${squareSize + padding + 2}em`,
-            top: `${padding / 3}em`,
+            left: `0`,
+            height: "100%",
+            top: `0`,
             borderRadius: "4em",
             transition: "width 0.3s ease",
             backgroundColor: "var(--md-sys-color-surface-container)",
@@ -119,10 +126,10 @@ export default function SocialNetworkPicker({ socialNetworks }: Props) {
         <div
           style={{
             position: "absolute",
-            left: `${group1Width + groupGap + 0.8}em`,
+            left: `${group1Width + groupGap}em`,
             width: `${group2Width}em`,
-            height: `${squareSize + padding + 2}em`,
-            top: `${padding / 3}em`,
+            height: "100%",
+            top: `0`,
             borderRadius: "4em",
             transition: "width 0.3s ease, left 0.3s ease",
             backgroundColor: "var(--md-sys-color-secondary-container)",
@@ -149,8 +156,9 @@ export default function SocialNetworkPicker({ socialNetworks }: Props) {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-
                   fontSize: "24px",
+                  overflow: "hidden",
+                  flexShrink: 0,
                 }}
               >
                 {square.icon}

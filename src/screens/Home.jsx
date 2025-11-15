@@ -1,98 +1,63 @@
 import { useState } from "react";
-import SocialNetworkPicker from "../components/SocialNetworkPicker/SocialNetworkPicker";
-import Icons from "../components/SocialNetworkPicker/Icons";
-import QRCode from "../components/QRCode/QRCode.tsx";
-import { useMD3Colors } from "../theme/colors";
-import ThemeSelector from "../themeSelector/ThemeSelector";
+import SegmentedButton from "../components/SegmentedButton/SegmentedButton";
+import { Icon } from "material-react";
+import QRcodeScreen from "./QRcodeScreen";
+import ScanScreen from "./ScanScreen";
 
-const socialNetworks = [
-  {
-    name: "Number",
-    id: "number",
-    icon: Icons.PhoneNumber({}),
-  },
-  { name: "Telegram", id: "telegram", icon: Icons.Telegram({}) },
-  { name: "WhatsApp", id: "whatsapp", icon: Icons.WhatsApp({}) },
-  { name: "Instagram", id: "instagram", icon: Icons.Instagram({}) },
-  { name: "TikTok", id: "tiktok", icon: Icons.TikTok({}) },
+const tabItems = [
+  { id: "qrcode", label: "QRcode", icon: <Icon name="qr_code" filled /> },
+  { id: "scan", label: "Scan", icon: <Icon name="qr_code_scanner" filled /> },
 ];
 
 export default function Home() {
-  const [selectedNetwork, setSelectedNetwork] = useState(null);
-  const [username, setUsername] = useState("");
-  const Color = useMD3Colors();
+  const [activeTab, setActiveTab] = useState("qrcode");
+  const [isAnimating, setIsAnimating] = useState(false);
 
-  console.log("Colors loaded:", Color);
-  console.log("Primary color:", Color.primary);
-  console.log("Background color:", Color.background);
+  const handleTabChange = (newTab) => {
+    if (newTab === activeTab || isAnimating) return;
 
-  const generateQRData = () => {
-    // if (!selectedNetwork || !username) return "";
+    setIsAnimating(true);
+    setActiveTab(newTab);
 
-    // const urlMap = {
-    //   number: `tel:${username}`,
-    //   telegram: `https://t.me/${username}`,
-    //   whatsapp: `https://wa.me/${username}`,
-    //   instagram: `https://instagram.com/${username}`,
-    //   tiktok: `https://tiktok.com/@${username}`,
-    // };
-
-    return "https://t.me/";
+    // Reset animation state after transition
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 400);
   };
 
-  // Don't render QR code until colors are loaded
-  const colorsReady = Color.primary && Color.background;
-
   return (
-    <div className="flex flex-col items-center gap-8 p-8">
-      <div className="w-full max-w-md mt-[3em]">
-        <SocialNetworkPicker
-          socialNetworks={socialNetworks}
-          onSelect={(network) => setSelectedNetwork(network.id)}
-        />
+    <div className="relative h-full overflow-hidden">
+      {/* Screen content with slide animation */}
+      <div
+        style={{
+          display: "flex",
+          width: "200%",
+          height: "100%",
+          transform: activeTab === "qrcode" ? "translateX(0%)" : "translateX(-50%)",
+          transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
+      >
+        <div style={{ width: "50%", height: "100%", flexShrink: 0 }}>
+          <QRcodeScreen />
+        </div>
+        <div style={{ width: "50%", height: "100%", flexShrink: 0 }}>
+          <ScanScreen />
+        </div>
       </div>
 
-      {/* <div className="flex flex-col items-center gap-4 w-full max-w-md">
-        <input
-          type="text"
-          placeholder="Введите username или номер"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
-        />
-      </div> */}
-
-      {generateQRData() && colorsReady && (
-        <div className="flex flex-col items-center gap-4 p-6 bg-[var(--md-sys-color-primary-container)] rounded-2xl shadow-lg mt-[8em]">
-          <QRCode
-            data={generateQRData()}
-            width={230}
-            height={230}
-            dotsOptions={{
-              color: Color.primary,
-              type: "rounded",
-            }}
-            cornersSquareOptions={{
-              type: "extra-rounded",
-              color: Color.primary,
-            }}
-            cornersDotOptions={{
-              type: "dot",
-              color: Color.primary,
-            }}
-            backgroundOptions={{
-              color: Color.primaryContainer,
-            }}
-          />
-        </div>
-      )}
-      <ThemeSelector />
-
-      {generateQRData() && !colorsReady && (
-        <div className="flex items-center justify-center mt-[8em]">
-          <p>Loading colors...</p>
-        </div>
-      )}
+      {/* Bottom Bar */}
+      <SegmentedButton
+        items={tabItems}
+        activeId={activeTab}
+        onChange={handleTabChange}
+        style={{
+          position: "fixed",
+          bottom: "10%",
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 1000,
+        }}
+      />
     </div>
   );
 }

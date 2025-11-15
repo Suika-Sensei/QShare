@@ -48,5 +48,8 @@
   --md-sys-color-surface-container: rgb(242 236 244);
   --md-sys-color-surface-container-high: rgb(236 230 238);
   --md-sys-color-surface-container-highest: rgb(230 224 233);
-  --md-icon-button-icon-color: var(--md-sys-color-primary-container);
+  --md-sys-color-segmented-button-selected: var(
+    --md-sys-color-on-primary-container
+  );
+  --md-sys-color-segmented-button-text-selected: var(--md-sys-color-on-primary);
 }
