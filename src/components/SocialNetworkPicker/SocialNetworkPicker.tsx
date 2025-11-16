@@ -152,7 +152,7 @@ export default function SocialNetworkPicker({
         const gapRatio = gapPx / (group1WidthPx || 1);
         const paddingRatio = paddingPx / (group1WidthPx || 1);
         const xRatio = paddingRatio + posInGroup * (itemWidthRatio + gapRatio);
-        x = xRatio * group1WidthPx - 1.18 * emToPx;
+        x = xRatio * group1WidthPx - 0 * emToPx;
       } else if (inGroup2) {
         const posInGroup = group2.indexOf(squareId);
         // Группа 2 начинается после группы 1 и gap

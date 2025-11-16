@@ -14,7 +14,7 @@ The application allows users to generate QR codes containing their contact infor
 
 ### Home Screen (QR Code Generation)
 
-![Home Screen](./assets/Home-QRcode.jpg)
+![Home Screen](./assets/Home-QRcode.png)
 
 ### Settings
 
