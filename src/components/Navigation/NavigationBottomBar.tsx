@@ -35,29 +35,36 @@ export default function NavigationBottomBar(props: NavigationBottomBarProps) {
         {ActiveScreen ? React.createElement(ActiveScreen) : null}
       </div>
 
-      <NavigationBar ref={navBarRef} activeIndex={activeTab}>
-        {items.map((item, index) => {
-          const inactiveIcon = item.iconInactive || item.icon;
-          const activeIcon = item.iconActive || item.icon;
+      <div
+        style={{
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
+          backgroundColor: "var(--md-sys-color-surface)",
+        }}
+      >
+        <NavigationBar ref={navBarRef} activeIndex={activeTab}>
+          {items.map((item, index) => {
+            const inactiveIcon = item.iconInactive || item.icon;
+            const activeIcon = item.iconActive || item.icon;
 
-          return (
-            <NavigationTab
-              key={item.id}
-              label={item.label}
-              onClick={() => handleTabClick(index)}
-            >
-              {inactiveIcon &&
-                React.isValidElement(inactiveIcon) &&
-                React.cloneElement(inactiveIcon, {
-                  slot: "inactive-icon",
-                } as any)}
-              {activeIcon &&
-                React.isValidElement(activeIcon) &&
-                React.cloneElement(activeIcon, { slot: "active-icon" } as any)}
-            </NavigationTab>
-          );
-        })}
-      </NavigationBar>
+            return (
+              <NavigationTab
+                key={item.id}
+                label={item.label}
+                onClick={() => handleTabClick(index)}
+              >
+                {inactiveIcon &&
+                  React.isValidElement(inactiveIcon) &&
+                  React.cloneElement(inactiveIcon, {
+                    slot: "inactive-icon",
+                  } as any)}
+                {activeIcon &&
+                  React.isValidElement(activeIcon) &&
+                  React.cloneElement(activeIcon, { slot: "active-icon" } as any)}
+              </NavigationTab>
+            );
+          })}
+        </NavigationBar>
+      </div>
     </div>
   );
 }

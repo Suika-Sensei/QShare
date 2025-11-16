@@ -78,7 +78,7 @@ export default function QRCode({
   },
   imageOptions = {
     crossOrigin: "anonymous",
-    margin: 10,
+    margin: 1,
   },
 }: QRCodeProps) {
   const ref = useRef<HTMLDivElement>(null);

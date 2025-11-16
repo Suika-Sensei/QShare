@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import SocialNetworkPicker from "../components/SocialNetworkPicker/SocialNetworkPicker";
 import Icons from "../components/SocialNetworkPicker/Icons";
 import QRCode from "../components/QRCode/QRCode.tsx";
@@ -10,74 +10,92 @@ const socialNetworks = [
     name: "Number",
     id: "number",
     icon: Icons.PhoneNumber({}),
+    value: "",
   },
-  { name: "Telegram", id: "telegram", icon: Icons.Telegram({}) },
-  { name: "WhatsApp", id: "whatsapp", icon: Icons.WhatsApp({}) },
-  { name: "Instagram", id: "instagram", icon: Icons.Instagram({}) },
-  { name: "TikTok", id: "tiktok", icon: Icons.TikTok({}) },
+  { name: "Telegram", id: "telegram", icon: Icons.Telegram({}), value: "" },
+  { name: "WhatsApp", id: "whatsapp", icon: Icons.WhatsApp({}), value: "" },
+  { name: "Instagram", id: "instagram", icon: Icons.Instagram({}), value: "" },
+  { name: "TikTok", id: "tiktok", icon: Icons.TikTok({}), value: "" },
 ];
 
 export default function QRcodeScreen() {
-  const [selectedNetwork, setSelectedNetwork] = useState(null);
-  const [username, setUsername] = useState("");
+  const [networks, setNetworks] = useState({
+    selected: socialNetworks.slice(0, 1),
+    unselected: socialNetworks.slice(1),
+  });
   const Color = useMD3Colors();
 
-  const generateQRData = () => {
-    // if (!selectedNetwork || !username) return "";
+  const qrData = useMemo(() => {
+    const result = networks.selected.map((item) => [item.id, item.value]);
+    return JSON.stringify(result, null, 2);
+  }, [networks.selected]);
 
-    // const urlMap = {
-    //   number: `tel:${username}`,
-    //   telegram: `https://t.me/${username}`,
-    //   whatsapp: `https://wa.me/${username}`,
-    //   instagram: `https://instagram.com/${username}`,
-    //   tiktok: `https://tiktok.com/@${username}`,
-    // };
+  const dotsOptions = useMemo(
+    () => ({
+      color: Color.primary,
+      type: "rounded",
+    }),
+    [Color.primary]
+  );
 
-    return "https://t.me/";
-  };
+  const cornersSquareOptions = useMemo(
+    () => ({
+      type: "extra-rounded",
+      color: Color.primary,
+    }),
+    [Color.primary]
+  );
+
+  const cornersDotOptions = useMemo(
+    () => ({
+      type: "dot",
+      color: Color.primary,
+    }),
+    [Color.primary]
+  );
+
+  const backgroundOptions = useMemo(
+    () => ({
+      color: Color.primaryContainer,
+    }),
+    [Color.primaryContainer]
+  );
+
+  const handleSelect = useCallback((unselected, selected) => {
+    setNetworks({ selected, unselected });
+  }, []);
 
   // Don't render QR code until colors are loaded
   const colorsReady = Color.primary && Color.background;
 
   return (
-    <div className="flex flex-col items-center gap-8 p-8">
-      <div className="w-full max-w-md mt-[3em]">
+    <div className="flex flex-col items-center h-full">
+      <div className="w-full max-w-md mt-[3em] px-8">
         <SocialNetworkPicker
           socialNetworks={socialNetworks}
-          onSelect={(network) => setSelectedNetwork(network.id)}
+          onSelect={handleSelect}
         />
       </div>
-      <div>
-        {generateQRData() && colorsReady && (
-          <div className="flex flex-col items-center p-6 gap-4 bg-[var(--md-sys-color-primary-container)] rounded-[4em] shadow-lg mt-[8em]">
+      <div className="flex-1 flex flex-col items-center justify-center">
+        {qrData && colorsReady && (
+          <div className="flex flex-col items-center p-6 gap-4 bg-[var(--md-sys-color-primary-container)] rounded-[4em] shadow-lg">
             <QRCode
-              data={generateQRData()}
-              width={280}
-              height={280}
-              dotsOptions={{
-                color: Color.primary,
-                type: "rounded",
-              }}
-              cornersSquareOptions={{
-                type: "extra-rounded",
-                color: Color.primary,
-              }}
-              cornersDotOptions={{
-                type: "dot",
-                color: Color.primary,
-              }}
-              backgroundOptions={{
-                color: Color.primaryContainer,
-              }}
+              data={qrData}
+              width={230}
+              height={230}
+              dotsOptions={dotsOptions}
+              cornersSquareOptions={cornersSquareOptions}
+              cornersDotOptions={cornersDotOptions}
+              backgroundOptions={backgroundOptions}
             />
           </div>
         )}
-        <div style={{ position: "relative", right: "10%", bottom: "25px" }}>
+        <div style={{ position: "relative", right: "50%", bottom: "20px" }}>
           <ThemeSelector />
         </div>
       </div>
 
-      {generateQRData() && !colorsReady && (
+      {qrData && !colorsReady && (
         <div className="flex items-center justify-center mt-[8em]">
           <p>Loading colors...</p>
         </div>

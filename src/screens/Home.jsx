@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SegmentedButton from "../components/SegmentedButton/SegmentedButton";
 import { Icon } from "material-react";
 import QRcodeScreen from "./QRcodeScreen";
@@ -12,6 +12,22 @@ const tabItems = [
 export default function Home() {
   const [activeTab, setActiveTab] = useState("qrcode");
   const [isAnimating, setIsAnimating] = useState(false);
+  const [topPosition, setTopPosition] = useState("75%");
+
+  useEffect(() => {
+    const updatePosition = () => {
+      const screenHeight = window.innerHeight;
+      if (screenHeight > 900) {
+        setTopPosition("80%");
+      } else {
+        setTopPosition("75%");
+      }
+    };
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    return () => window.removeEventListener("resize", updatePosition);
+  }, []);
 
   const handleTabChange = (newTab) => {
     if (newTab === activeTab || isAnimating) return;
@@ -33,7 +49,8 @@ export default function Home() {
           display: "flex",
           width: "200%",
           height: "100%",
-          transform: activeTab === "qrcode" ? "translateX(0%)" : "translateX(-50%)",
+          transform:
+            activeTab === "qrcode" ? "translateX(0%)" : "translateX(-50%)",
           transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       >
@@ -52,7 +69,7 @@ export default function Home() {
         onChange={handleTabChange}
         style={{
           position: "fixed",
-          bottom: "10%",
+          top: topPosition,
           left: "50%",
           transform: "translateX(-50%)",
           zIndex: 1000,
