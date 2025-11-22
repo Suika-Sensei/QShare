@@ -78,7 +78,7 @@ export default function QRCode({
   },
   imageOptions = {
     crossOrigin: "anonymous",
-    margin: 1,
+    margin: 20,
   },
 }: QRCodeProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -92,6 +92,7 @@ export default function QRCode({
         height,
         data,
         image,
+        type: "svg",
         dotsOptions,
         backgroundOptions,
         imageOptions,

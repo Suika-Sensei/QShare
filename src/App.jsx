@@ -1,10 +1,10 @@
 // Import Material Design 3 themes
 import "./styles";
 import "material-react/styles";
-import NavigationControl from "./components/NavigationControl";
+import { NavigationController } from "@/components";
 
 function App() {
-  return <NavigationControl />;
+  return <NavigationController />;
 }
 
 export default App;

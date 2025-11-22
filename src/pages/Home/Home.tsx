@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import SegmentedButton from "../components/SegmentedButton/SegmentedButton";
+import SegmentedButton from "@/components/SegmentedButton/SegmentedButton";
 import { Icon } from "material-react";
-import QRcodeScreen from "./QRcodeScreen";
-import ScanScreen from "./ScanScreen";
+import QRcodeScreen from "@/screens/QRcodeScreen";
+import ScanScreen from "@/screens/ScanScreen";
 
 const tabItems = [
   { id: "qrcode", label: "QRcode", icon: <Icon name="qr_code" filled /> },
@@ -29,7 +29,7 @@ export default function Home() {
     return () => window.removeEventListener("resize", updatePosition);
   }, []);
 
-  const handleTabChange = (newTab) => {
+  const handleTabChange = (newTab: string) => {
     if (newTab === activeTab || isAnimating) return;
 
     setIsAnimating(true);
@@ -58,7 +58,7 @@ export default function Home() {
           <QRcodeScreen />
         </div>
         <div style={{ width: "50%", height: "100%", flexShrink: 0 }}>
-          <ScanScreen />
+          <ScanScreen isActive={activeTab === "scan"} />
         </div>
       </div>
 

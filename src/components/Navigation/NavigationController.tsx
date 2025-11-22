@@ -1,7 +1,7 @@
 import { useState } from "react";
-import Home from "../screens/Home";
-import Settings from "../screens/Settings";
-import NavigationBottomBar from "./Navigation/NavigationBottomBar";
+import Home from "@/pages/Home";
+import Settings from "@/pages/Settings";
+import NavigationBottomBar from "./NavigationBottomBar";
 import { Icon } from "material-react";
 
 const NAV_ITEMS = [
@@ -12,8 +12,6 @@ const NAV_ITEMS = [
     iconActive: <Icon name="home" filled />,
     iconInactive: <Icon name="home" />,
     href: "/",
-    badge: "1",
-    disabled: false,
     screen: Home,
   },
   {
@@ -23,16 +21,14 @@ const NAV_ITEMS = [
     iconActive: <Icon name="settings" filled />,
     iconInactive: <Icon name="settings" />,
     href: "/settings",
-    badge: "2",
-    disabled: false,
     screen: Settings,
   },
 ];
 
-export default function NavigationControl() {
+export default function NavigationController() {
   const [activeTab, setActiveTab] = useState(0);
 
-  const handleTabChange = (id) => {
+  const handleTabChange = (id: string) => {
     // Находим индекс элемента по id
     const newIndex = NAV_ITEMS.findIndex((item) => item.id === id);
     if (newIndex !== -1) {

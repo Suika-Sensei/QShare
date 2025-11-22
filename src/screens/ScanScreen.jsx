@@ -1,91 +1,105 @@
-import { useState, useRef, useEffect } from "react";
-import { Icon, OutlinedButton } from "material-react";
-import {
-  checkPermissions,
-  requestPermissions,
-} from "@tauri-apps/plugin-barcode-scanner";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { Icon, OutlinedButton, BottomSheet, FilledButton } from "material-react";
+import { checkPermissions, requestPermissions } from "@tauri-apps/plugin-barcode-scanner";
 import jsQR from "jsqr";
+import LZString from "lz-string";
+import { SocialNetworkCard } from "@/components/SocialNetworkCard";
+import Icons from "@/components/SocialNetworkPicker/Icons";
 
-export default function ScanScreen() {
+// Maps social network IDs to display metadata
+const socialNetworkMeta = {
+  number: { name: "Phone Number", icon: Icons.PhoneNumber },
+  telegram: { name: "Telegram", icon: Icons.Telegram },
+  whatsapp: { name: "WhatsApp", icon: Icons.WhatsApp },
+  instagram: { name: "Instagram", icon: Icons.Instagram },
+  tiktok: { name: "TikTok", icon: Icons.TikTok },
+};
+
+export default function ScanScreen({ isActive = true }) {
   const [scanResult, setScanResult] = useState(null);
   const [error, setError] = useState(null);
-  const [isScanning, setIsScanning] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
+
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const canvasRef = useRef(null);
   const scanIntervalRef = useRef(null);
-  const hasStartedRef = useRef(false);
+  const isActiveRef = useRef(isActive);
+
+  // Parse scan result into social networks array
+  const parsedNetworks = useMemo(() => {
+    if (!scanResult) return null;
+    try {
+      const data = JSON.parse(scanResult);
+      if (!Array.isArray(data)) return null;
+      return data
+        .map(([id, value]) => {
+          const meta = socialNetworkMeta[id];
+          if (!meta) return null;
+          return { id, value, ...meta };
+        })
+        .filter(Boolean);
+    } catch {
+      return null;
+    }
+  }, [scanResult]);
 
   const startCamera = async () => {
+    // Don't start if already running
+    if (streamRef.current) return;
+
     try {
       setError(null);
 
-      // Check and request permissions via Tauri plugin
+      // Check if still active before starting
+      if (!isActiveRef.current) return;
+
       let permissionState = await checkPermissions();
-      console.log("Initial permission state:", permissionState);
-
       if (permissionState !== "granted") {
-        console.log("Requesting permissions...");
         permissionState = await requestPermissions();
-        console.log("After request:", permissionState);
-
         if (permissionState !== "granted") {
           setError(`Camera permission denied (status: ${permissionState})`);
           return;
         }
       }
 
-      // Start camera preview using Web API
-      console.log("Requesting getUserMedia...");
+      // Check again after async permission check
+      if (!isActiveRef.current) return;
+
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
 
-      console.log("Got stream:", stream);
-      console.log("Stream tracks:", stream.getTracks());
+      // Check again after getting stream - stop it if no longer active
+      if (!isActiveRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
 
       streamRef.current = stream;
       setShowCamera(true);
 
-      // Даём React время отрисовать video элемент
+      // Wait for React to render video element
       setTimeout(() => {
-        if (videoRef.current) {
+        if (videoRef.current && isActiveRef.current) {
           videoRef.current.srcObject = stream;
-          console.log("Video element srcObject set");
-          // Принудительно запускаем воспроизведение
-          videoRef.current
-            .play()
-            .then(() => {
-              console.log("Video play() succeeded");
-              // Запускаем автосканирование после успешного запуска видео
-              startAutoScan();
-            })
-            .catch((err) => {
-              console.error("Video play() failed:", err);
-            });
-        } else {
-          console.error("videoRef.current is null after timeout");
+          videoRef.current.play().then(startAutoScan).catch(() => {});
         }
       }, 100);
     } catch (err) {
-      console.error("Camera error:", err);
       setError(err.message || "Failed to start camera");
     }
   };
 
-  // Функция автоматического сканирования QR кода
+  // Scan video frames for QR codes at 200ms intervals
   const startAutoScan = () => {
     if (scanIntervalRef.current) {
       clearInterval(scanIntervalRef.current);
     }
 
-    // Создаём canvas для захвата кадров
     if (!canvasRef.current) {
       canvasRef.current = document.createElement("canvas");
     }
-
-    setIsScanning(true);
 
     scanIntervalRef.current = setInterval(() => {
       if (!videoRef.current || !canvasRef.current) return;
@@ -94,31 +108,22 @@ export default function ScanScreen() {
       const canvas = canvasRef.current;
       const context = canvas.getContext("2d");
 
-      // Устанавливаем размер canvas равным размеру видео
       if (video.videoWidth && video.videoHeight) {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-
-        // Захватываем кадр
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = context.getImageData(
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        );
 
-        // Сканируем QR код
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
         const code = jsQR(imageData.data, imageData.width, imageData.height);
 
         if (code) {
-          console.log("QR Code found:", code.data);
-          setScanResult(code.data);
+          const decompressedData = LZString.decompressFromBase64(code.data);
+          setScanResult(decompressedData || code.data);
           stopAutoScan();
           stopCamera();
         }
       }
-    }, 200); // Сканируем каждые 200мс
+    }, 200);
   };
 
   const stopAutoScan = () => {
@@ -126,25 +131,7 @@ export default function ScanScreen() {
       clearInterval(scanIntervalRef.current);
       scanIntervalRef.current = null;
     }
-    setIsScanning(false);
   };
-
-  // Автозапуск камеры при монтировании компонента
-  useEffect(() => {
-    if (!hasStartedRef.current) {
-      hasStartedRef.current = true;
-      startCamera();
-    }
-
-    // Останавливаем камеру при размонтировании
-    return () => {
-      stopAutoScan();
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-        streamRef.current = null;
-      }
-    };
-  }, []);
 
   const stopCamera = () => {
     stopAutoScan();
@@ -159,12 +146,37 @@ export default function ScanScreen() {
     setScanResult(null);
     setError(null);
     stopCamera();
-    // Перезапускаем камеру
     setTimeout(() => {
-      hasStartedRef.current = false;
-      startCamera();
+      if (isActiveRef.current) {
+        startCamera();
+      }
     }, 100);
   };
+
+  // Start/stop camera based on isActive prop
+  useEffect(() => {
+    isActiveRef.current = isActive;
+
+    if (isActive && !scanResult) {
+      startCamera();
+    } else {
+      // Stop camera when tab is not active
+      stopAutoScan();
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
+      setShowCamera(false);
+    }
+
+    return () => {
+      stopAutoScan();
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
+    };
+  }, [isActive, scanResult]);
 
   return (
     <div className="flex flex-col items-center justify-center h-full p-8">
@@ -172,10 +184,7 @@ export default function ScanScreen() {
         {!showCamera && (
           <Icon
             name="qr_code_scanner"
-            style={{
-              fontSize: "96px",
-              color: "var(--md-sys-color-primary)",
-            }}
+            style={{ fontSize: "96px", color: "var(--md-sys-color-primary)" }}
           />
         )}
 
@@ -206,14 +215,7 @@ export default function ScanScreen() {
               autoPlay
               playsInline
               muted
-              onLoadedMetadata={() => console.log("Video metadata loaded")}
-              onPlay={() => console.log("Video started playing")}
-              onError={(e) => console.error("Video error:", e)}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-              }}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
             <div
               style={{
@@ -239,38 +241,6 @@ export default function ScanScreen() {
           </p>
         )}
 
-        {scanResult && (
-          <div
-            style={{
-              backgroundColor: "var(--md-sys-color-surface-container)",
-              padding: "16px",
-              borderRadius: "12px",
-              width: "100%",
-              maxWidth: "300px",
-            }}
-          >
-            <p
-              style={{
-                color: "var(--md-sys-color-on-surface)",
-                fontSize: "14px",
-                fontWeight: "500",
-                marginBottom: "8px",
-              }}
-            >
-              Result:
-            </p>
-            <p
-              style={{
-                color: "var(--md-sys-color-on-surface-variant)",
-                fontSize: "14px",
-                wordBreak: "break-all",
-              }}
-            >
-              {scanResult}
-            </p>
-          </div>
-        )}
-
         {error && (
           <p
             style={{
@@ -283,15 +253,86 @@ export default function ScanScreen() {
           </p>
         )}
 
-        <div className="mt-4 font-normal">
-          {(scanResult || error) && (
+        {error && (
+          <div className="mt-4 font-normal">
             <OutlinedButton onClick={handleReset} className="px-4">
               <Icon name="refresh" filled className="pr-1" />
               Scan Again
             </OutlinedButton>
-          )}
-        </div>
+          </div>
+        )}
       </div>
+
+      <BottomSheet open={!!scanResult} onClose={handleReset} height="half">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-3">
+            <Icon
+              name="qr_code_2"
+              filled
+              style={{ fontSize: "32px", color: "var(--md-sys-color-primary)" }}
+            />
+            <h3
+              style={{
+                color: "var(--md-sys-color-on-surface)",
+                fontSize: "22px",
+                fontWeight: "500",
+                margin: 0,
+              }}
+            >
+              {parsedNetworks ? "Contacts" : "Scan Result"}
+            </h3>
+          </div>
+
+          {parsedNetworks ? (
+            <div className="flex flex-col gap-3">
+              {parsedNetworks.map((network) => (
+                <SocialNetworkCard
+                  key={network.id}
+                  icon={network.icon({ size: 24 })}
+                  title={network.name}
+                  subtitle={network.value || "Not provided"}
+                />
+              ))}
+            </div>
+          ) : (
+            <div
+              style={{
+                backgroundColor: "var(--md-sys-color-surface-container-high)",
+                padding: "16px",
+                borderRadius: "12px",
+              }}
+            >
+              <p
+                style={{
+                  color: "var(--md-sys-color-on-surface)",
+                  fontSize: "14px",
+                  wordBreak: "break-all",
+                  margin: 0,
+                  lineHeight: "1.5",
+                }}
+              >
+                {scanResult}
+              </p>
+            </div>
+          )}
+
+          <div className="flex gap-3 mt-2">
+            <OutlinedButton onClick={handleReset} className="flex-1">
+              <Icon name="refresh" className="pr-1" />
+              Scan Again
+            </OutlinedButton>
+            {!parsedNetworks && (
+              <FilledButton
+                onClick={() => navigator.clipboard.writeText(scanResult)}
+                className="flex-1"
+              >
+                <Icon name="content_copy" className="pr-1" />
+                Copy
+              </FilledButton>
+            )}
+          </div>
+        </div>
+      </BottomSheet>
     </div>
   );
 }
