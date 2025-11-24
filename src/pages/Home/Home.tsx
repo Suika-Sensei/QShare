@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import SegmentedButton from "@/components/SegmentedButton/SegmentedButton";
 import { Icon } from "material-react";
-import QRcodeScreen from "@/screens/QRcodeScreen";
-import ScanScreen from "@/screens/ScanScreen";
+import QRcodeScreen from "./QRcodeScreen";
+import ScanScreen from "./ScanScreen";
 
 const tabItems = [
   { id: "qrcode", label: "QRcode", icon: <Icon name="qr_code" filled /> },

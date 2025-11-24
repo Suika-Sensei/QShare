@@ -1,29 +1,28 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Icon, OutlinedButton, BottomSheet, FilledButton } from "material-react";
-import { checkPermissions, requestPermissions } from "@tauri-apps/plugin-barcode-scanner";
+import {
+  Icon,
+  OutlinedButton,
+  BottomSheet,
+  FilledButton,
+} from "material-react";
+import {
+  checkPermissions,
+  requestPermissions,
+} from "@tauri-apps/plugin-barcode-scanner";
 import jsQR from "jsqr";
 import LZString from "lz-string";
 import { SocialNetworkCard } from "@/components/SocialNetworkCard";
-import Icons from "@/components/SocialNetworkPicker/Icons";
+import { SocialNetworkIcon, getNetworkById } from "@/components/SocialNetworkIcon";
 
-// Maps social network IDs to display metadata
-const socialNetworkMeta = {
-  number: { name: "Phone Number", icon: Icons.PhoneNumber },
-  telegram: { name: "Telegram", icon: Icons.Telegram },
-  whatsapp: { name: "WhatsApp", icon: Icons.WhatsApp },
-  instagram: { name: "Instagram", icon: Icons.Instagram },
-  tiktok: { name: "TikTok", icon: Icons.TikTok },
-};
-
-export default function ScanScreen({ isActive = true }) {
-  const [scanResult, setScanResult] = useState(null);
-  const [error, setError] = useState(null);
+export default function ScanScreen({ isActive = true }: { isActive?: boolean }) {
+  const [scanResult, setScanResult] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [showCamera, setShowCamera] = useState(false);
 
-  const videoRef = useRef(null);
-  const streamRef = useRef(null);
-  const canvasRef = useRef(null);
-  const scanIntervalRef = useRef(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const scanIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const isActiveRef = useRef(isActive);
 
   // Parse scan result into social networks array
@@ -34,9 +33,14 @@ export default function ScanScreen({ isActive = true }) {
       if (!Array.isArray(data)) return null;
       return data
         .map(([id, value]) => {
-          const meta = socialNetworkMeta[id];
-          if (!meta) return null;
-          return { id, value, ...meta };
+          const network = getNetworkById(id);
+          if (!network) return null;
+          return {
+            id,
+            value,
+            name: network.name,
+            urlPrefix: network.urlPrefix,
+          };
         })
         .filter(Boolean);
     } catch {
@@ -83,7 +87,10 @@ export default function ScanScreen({ isActive = true }) {
       setTimeout(() => {
         if (videoRef.current && isActiveRef.current) {
           videoRef.current.srcObject = stream;
-          videoRef.current.play().then(startAutoScan).catch(() => {});
+          videoRef.current
+            .play()
+            .then(startAutoScan)
+            .catch(() => {});
         }
       }, 100);
     } catch (err) {
@@ -113,7 +120,12 @@ export default function ScanScreen({ isActive = true }) {
         canvas.height = video.videoHeight;
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const imageData = context.getImageData(
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
         const code = jsQR(imageData.data, imageData.width, imageData.height);
 
         if (code) {
@@ -255,8 +267,8 @@ export default function ScanScreen({ isActive = true }) {
 
         {error && (
           <div className="mt-4 font-normal">
-            <OutlinedButton onClick={handleReset} className="px-4">
-              <Icon name="refresh" filled className="pr-1" />
+            <OutlinedButton onClick={handleReset} className="px-4" hasIcon>
+              <Icon name="refresh" filled slot="icon" />
               Scan Again
             </OutlinedButton>
           </div>
@@ -288,9 +300,11 @@ export default function ScanScreen({ isActive = true }) {
               {parsedNetworks.map((network) => (
                 <SocialNetworkCard
                   key={network.id}
-                  icon={network.icon({ size: 24 })}
+                  icon={<SocialNetworkIcon networkId={network.id} size={20} />}
                   title={network.name}
                   subtitle={network.value || "Not provided"}
+                  urlPrefix={network.urlPrefix}
+                  value={network.value}
                 />
               ))}
             </div>
@@ -317,16 +331,17 @@ export default function ScanScreen({ isActive = true }) {
           )}
 
           <div className="flex gap-3 mt-2">
-            <OutlinedButton onClick={handleReset} className="flex-1">
-              <Icon name="refresh" className="pr-1" />
+            <OutlinedButton onClick={handleReset} className="flex-1" hasIcon>
+              <Icon name="refresh" slot="icon" />
               Scan Again
             </OutlinedButton>
             {!parsedNetworks && (
               <FilledButton
                 onClick={() => navigator.clipboard.writeText(scanResult)}
                 className="flex-1"
+                hasIcon
               >
-                <Icon name="content_copy" className="pr-1" />
+                <Icon name="content_copy" slot="icon" />
                 Copy
               </FilledButton>
             )}

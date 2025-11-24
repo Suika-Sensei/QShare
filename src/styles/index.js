@@ -2,7 +2,6 @@
 // Import all theme CSS files
 
 // Note: Material Symbols icon fonts are now imported from @material-react/web
-// See App.jsx: import "@material-react/web/styles"
 
 import "./light.css";
 import "./dark.css";

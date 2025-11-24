@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
-import { Icon, IconButton, Ripple } from "material-react";
+import { Icon, IconButton, Ripple, FilledButton } from "material-react";
+import { openUrl } from "@tauri-apps/plugin-opener";
 
 interface SocialNetworkCardProps {
   /** Иконка или аватар (ReactNode для гибкости) */
@@ -14,6 +15,10 @@ interface SocialNetworkCardProps {
   onEdit?: () => void;
   /** Клик по всей карточке */
   onClick?: () => void;
+  /** URL префикс для открытия (если есть - показывается кнопка "Открыть") */
+  urlPrefix?: string;
+  /** Значение для открытия/копирования */
+  value?: string;
 }
 
 export default function SocialNetworkCard({
@@ -23,8 +28,22 @@ export default function SocialNetworkCard({
   subtitle,
   onEdit,
   onClick,
+  urlPrefix,
+  value,
 }: SocialNetworkCardProps) {
   const letter = avatarLetter || title.charAt(0).toUpperCase();
+
+  const handleOpen = async () => {
+    if (urlPrefix && value) {
+      await openUrl(urlPrefix + value);
+    }
+  };
+
+  const handleCopy = () => {
+    if (value) {
+      navigator.clipboard.writeText(value);
+    }
+  };
 
   return (
     <div
@@ -96,12 +115,34 @@ export default function SocialNetworkCard({
             onEdit();
           }}
         >
-          <Icon
-            name="edit"
-            style={{ color: "var(--md-sys-color-primary)" }}
-          />
+          <Icon name="edit" style={{ color: "var(--md-sys-color-primary)" }} />
         </IconButton>
       )}
+
+      {/* Кнопка открыть/копировать */}
+      {value &&
+        !onEdit &&
+        (urlPrefix ? (
+          <FilledButton
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOpen();
+            }}
+            style={{ flexShrink: 0 }}
+          >
+            <Icon name="open_in_new" filled className="p-2" />
+          </FilledButton>
+        ) : (
+          <FilledButton
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCopy();
+            }}
+            style={{ flexShrink: 0 }}
+          >
+            <Icon name="content_copy" filled className="p-2" />
+          </FilledButton>
+        ))}
     </div>
   );
 }

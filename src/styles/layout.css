@@ -80,3 +80,15 @@ md-navigation-bar {
   border-radius: 16px;
   color: var(--md-sys-color-on-surface-variant);
 }
+
+/* Fix icon alignment in Material Web Components buttons */
+md-filled-button [slot="icon"],
+md-outlined-button [slot="icon"],
+md-text-button [slot="icon"],
+md-elevated-button [slot="icon"],
+md-filled-tonal-button [slot="icon"] {
+  vertical-align: middle;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

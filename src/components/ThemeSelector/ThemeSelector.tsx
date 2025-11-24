@@ -1,5 +1,6 @@
 import { Icon, FilledIconButton } from "material-react";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { LazyStore } from "@tauri-apps/plugin-store";
 import "./ThemeSelector.css";
 
 type ThemeSelectorProps = {
@@ -7,11 +8,28 @@ type ThemeSelectorProps = {
   className?: string;
 };
 
+const THEME_KEY = "theme";
+
 const ThemeSelector: React.FC<ThemeSelectorProps> = ({ style, className }) => {
-  const [theme, setTheme] = useState(document.body.className || "light");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   const [isAnimating, setIsAnimating] = useState(false);
   const buttonRef = useRef<HTMLElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const storeRef = useRef<LazyStore | null>(null);
+
+  // Загрузка сохранённой темы при монтировании
+  useEffect(() => {
+    const initTheme = async () => {
+      storeRef.current = new LazyStore("settings.json");
+      const savedTheme = await storeRef.current.get<"light" | "dark">(THEME_KEY);
+      const initialTheme = savedTheme || "light";
+
+      setTheme(initialTheme);
+      document.body.classList.remove("light", "dark");
+      document.body.classList.add(initialTheme);
+    };
+    initTheme();
+  }, []);
 
   const handleThemeChange = (newTheme: "light" | "dark") => {
     if (isAnimating) return;
@@ -24,6 +42,12 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({ style, className }) => {
       setTheme(newTheme);
       document.body.classList.remove("light", "dark");
       document.body.classList.add(newTheme);
+
+      // Сохраняем тему
+      if (storeRef.current) {
+        storeRef.current.set(THEME_KEY, newTheme);
+        storeRef.current.save();
+      }
       return;
     }
 
@@ -73,6 +97,12 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({ style, className }) => {
       setTheme(newTheme);
       document.body.classList.remove("light", "dark");
       document.body.classList.add(newTheme);
+
+      // Сохраняем тему
+      if (storeRef.current) {
+        storeRef.current.set(THEME_KEY, newTheme);
+        storeRef.current.save();
+      }
     }, 300);
 
     // Скрываем оверлей после завершения
